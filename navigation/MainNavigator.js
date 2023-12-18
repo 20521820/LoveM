@@ -5,6 +5,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import HomeScreen from "../screens/CameraScreen/Home";
 import StartNavigator from "../navigation/StartNavigator";
 import ProfileNavigator from "../navigation/ProfileNavigator";
+import Auth from "./Auth";
 
 const Stack = createStackNavigator();
 
@@ -17,6 +18,13 @@ export default function HomeNavigator() {
           component={StartNavigator}
           options={{ headerShown: false }}
         />
+
+        <Stack.Screen
+          name="Auth"
+          component={Auth}
+          options={{ headerShown: false }}
+        />
+
         <Stack.Screen
           name="HomeScreen"
           component={HomeScreen}

@@ -1,5 +1,5 @@
-import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity, Image } from 'react-native'
-import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity, Image, Keyboard } from 'react-native'
+import React, { createRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { firebase } from '../config';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -9,13 +9,50 @@ const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errortext, setErrortext] = useState('');
 
-  loginUser = async (email, password) => {
-    try {
-      await firebase.auth().signInWithEmailAndPassword(email, password)
-    } catch (error) {
-      alert(error.message)
+  const passwordInputRef = createRef();
+
+  const handleSubmitPress = () => {
+    setErrortext("");
+    if (!email) {
+      alert("Please enter your email");
+      return;
     }
+    if (!password) {
+      alert("Please enter your password");
+      return;
+    }
+    firebase.auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((user) => {
+        console.log(user);
+        if (user) navigation.replace("Home");
+      })
+      .catch((error) => {
+        console.log(error);
+        if (error.code === "auth/invalid-email")
+          setErrortext(error.message);
+        else if (error.code === "auth/user-not-found")
+          setErrortext("No User Found");
+        else {
+          setErrortext("Please check your email or password");
+        }
+      });
+  }
+
+  // forgot password
+  const forgotPassword = () => {
+    if (!email) {
+      alert("Please enter your email!");
+    }
+    firebase.auth().sendPasswordResetEmail(firebase.auth().currentUser.email)
+      .then(() => {
+        alert("Password reset email sent")
+      })
+      .catch((error) => {
+        alert(error.message);
+      })
   }
 
   return (
@@ -30,10 +67,13 @@ const LoginScreen = () => {
             <View style={styles.sectionStyle}>
               <Icon name="mail-outline" size={27} style={styles.iconStyle} />
               <TextInput
-                placeholder="Email"
+                placeholder="Enter Email"
                 onChangeText={(email) => setEmail(email)}
                 autoCapitalize="none"
                 autoCorrect={false}
+                onSubmitEditing={() =>
+                  passwordInputRef.current &&
+                  passwordInputRef.current.focus()}
                 style={styles.textInput}
               />
             </View>
@@ -47,18 +87,39 @@ const LoginScreen = () => {
             />
             <TextInput
               style={styles.textInput}
-              placeholder="Password"
+              placeholder="Enter Password"
               secureTextEntry={true}
               onChangeText={(password) => setPassword(password)}
               autoCapitalize='none'
               autoCorrect={false}
+              onSubmitEditing={Keyboard.dismiss}
+              blurOnSubmit={false}
             />
           </View>
+
+          {errortext != "" ? (
+            <Text style={styles.errorTextStyle}>
+              {" "}
+              {errortext}{" "}
+            </Text>
+          ) : null}
+
+          <TouchableOpacity onPress={() => { forgotPassword() }} >
+            <Text
+              style={{
+                fontWeight: 'bold',
+                fontSize: 16,
+                color: 'red',
+                margin: 5,
+              }}>
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
 
           <View style={styles.formatButton}>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => loginUser(email, password)}>
+              onPress={handleSubmitPress}>
               <Text style={styles.textButton}>LOGIN</Text>
             </TouchableOpacity>
           </View>
@@ -77,7 +138,7 @@ const LoginScreen = () => {
                 justifyContent: 'center',
               }}>
               Don't have an account?
-              <Text style={{ color: COLORS.logo}}>Register Now</Text>
+              <Text style={{ color: COLORS.logo }}>Register Now</Text>
             </Text>
 
           </TouchableOpacity>
@@ -152,6 +213,11 @@ const styles = StyleSheet.create({
   textCheckBox: {
     margin: 10,
     color: 'white',
+  },
+  errorTextStyle: {
+    color: "red",
+    textAlign: "center",
+    fontSize: 14,
   },
 });
 

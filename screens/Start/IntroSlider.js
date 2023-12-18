@@ -9,8 +9,10 @@ import AppIntroSlider from "react-native-app-intro-slider";
 import { slides } from "../../data/intro";
 import { COLORS, FONTS, STYLES } from "../../theme/style";
 import Button from "../../components/Button";
+import { useNavigation } from "@react-navigation/native";
 
-const IntroSlider = ({ navigation }) => {
+const IntroSlider = () => {
+  const navigation = useNavigation();
   const sliderRef = useRef(null);
   const [isLastSlide, setIsLastSlide] = useState(false);
 
@@ -55,7 +57,7 @@ const IntroSlider = ({ navigation }) => {
       <View style={{ marginHorizontal: 10, marginBottom: 20 }}>
         <Button
           text="I've enabled the widget"
-          handlePress={() => navigation.navigate("HomeScreen")}
+          handlePress={() => navigation.navigate('Auth')}
           backgroundColor={isLastSlide ? COLORS.logo : COLORS.gray}
           color={isLastSlide ? COLORS.black : COLORS.darkGray}
         />
